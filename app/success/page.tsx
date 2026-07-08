@@ -9,25 +9,34 @@ export default function SuccessPage() {
   const [plan, setPlan] = useState<Plan | null>(null);
 
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const paidPlan = params.get("plan") as "starter" | "partner" | null;
+    const params = new URLSearchParams(window.location.search);
 
-  if (paidPlan === "partner") {
-  localStorage.setItem("aina_plan", "partner");
-  localStorage.setItem("aina_upload_count", "0");
-  localStorage.setItem("aina_payment_unlocked", "partner");
-  setPlan("partner");
-  return;
-}
+    const paidPlan = params.get("plan") as Plan | null;
+    const statusId = params.get("status_id");
+    const ref = params.get("ref");
+    const billCode = params.get("billcode");
 
-if (paidPlan === "starter") {
-  localStorage.setItem("aina_plan", "starter");
-  localStorage.setItem("aina_upload_count", "0");
-  localStorage.setItem("aina_payment_unlocked", "starter");
-  setPlan("starter");
-  return;
-}
-}, []);
+    if (paidPlan !== "starter" && paidPlan !== "partner") return;
+
+    localStorage.setItem("aina_plan", paidPlan);
+    localStorage.setItem("aina_upload_count", "0");
+    localStorage.setItem("aina_payment_unlocked", paidPlan);
+    setPlan(paidPlan);
+
+    if (statusId === "1" && ref) {
+      fetch("/api/payment/confirm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ref,
+          plan: paidPlan,
+          billCode,
+        }),
+      });
+    }
+  }, []);
 
   return (
     <main
