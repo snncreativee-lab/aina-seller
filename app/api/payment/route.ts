@@ -12,15 +12,15 @@ const PLAN_CONFIG: Record<
   }
 > = {
   starter: {
-    name: "AINA RM4_90",
-    amount: 490,
-    description: "Sambung 6 upload gambar produk",
-  },
-  partner: {
-    name: "AINA Partner",
-    amount: 1990,
-    description: "Partner AINA sebulan unlimited upload",
-  },
+  name: "AINA Starter",
+  amount: 490,
+  description: "AINA Starter - 6 upload gambar produk",
+},
+partner: {
+  name: "AINA Business Partner",
+  amount: 1990,
+  description: "AINA Business Partner - unlimited upload gambar produk sebulan",
+},
 };
 
 export async function POST(req: Request) {
