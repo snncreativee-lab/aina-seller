@@ -75,8 +75,9 @@ export default function AinaChat() {
   console.log("PLAN:", plan, "LIMIT:", uploadLimit);
 
   useEffect(() => {
-    const anonymousId = getAnonymousUserId();
+  const anonymousId = getAnonymousUserId();
 setUserId(anonymousId);
+loadChat(anonymousId);
   const savedMemory = localStorage.getItem("aina_product_memory");
   const savedBusinessMemory = localStorage.getItem("aina_business_memory");
   const savedTimelineMemory = localStorage.getItem("aina_timeline_memory");
@@ -132,6 +133,7 @@ useEffect(() => {
           type: "typing",
         },
       ]);
+      
 
       await wait(700);
 
@@ -145,6 +147,7 @@ useEffect(() => {
             text: part,
           })
       );
+      await saveChat("aina", part);
 
       await wait(250);
     }
@@ -249,6 +252,55 @@ async function saveMemoryToDatabase(
   } catch (error) {
     console.error("Save memory error:", error);
   }
+}async function saveChat(
+  role: "user" | "aina",
+  message: string
+) {
+  try {
+    await fetch("/api/chat/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        phone: userId,
+        role,
+        message,
+      }),
+    });
+  } catch (error) {
+    console.error("Save chat error:", error);
+  }
+}
+async function loadChat(phoneId: string) {
+  try {
+    const response = await fetch("/api/chat/load", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        phone: phoneId,
+      }),
+    });
+
+    const data = await readJsonResponse(response);
+
+    if (!data?.success || !Array.isArray(data.messages)) return;
+
+    if (data.messages.length === 0) return;
+
+    setMessages(
+      data.messages.map((msg: any) => ({
+        id: crypto.randomUUID(),
+        from: msg.role === "user" ? "user" : "aina",
+        type: "text",
+        text: msg.message,
+      }))
+    );
+  } catch (error) {
+    console.error("Load chat error:", error);
+  }
 }
   async function sendMessage() {
   if (!input.trim() || loading) return;
@@ -266,6 +318,7 @@ async function saveMemoryToDatabase(
         text,
       },
     ]);
+    await saveChat("user", text);
 
     setInput("");
     setLoading(true);
