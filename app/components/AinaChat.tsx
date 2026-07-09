@@ -188,7 +188,7 @@ useEffect(() => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        phone: userId,
+        phone: phoneId,
       }),
     });
 
@@ -227,7 +227,10 @@ useEffect(() => {
     console.error("Load memory error:", error);
   }
 }
-async function saveMemoryToDatabase(nextUploadCount?: number) {
+async function saveMemoryToDatabase(
+  nextUploadCount?: number,
+  nextProductMemory?: string
+) {
   try {
     await fetch("/api/memory", {
       method: "POST",
@@ -235,10 +238,10 @@ async function saveMemoryToDatabase(nextUploadCount?: number) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        phone: "guest",
+        phone: userId,
         plan,
         uploadCount: nextUploadCount ?? uploadCount,
-        productMemory,
+        productMemory: nextProductMemory ?? productMemory,
         businessMemory,
         timelineMemory,
       }),
@@ -247,10 +250,12 @@ async function saveMemoryToDatabase(nextUploadCount?: number) {
     console.error("Save memory error:", error);
   }
 }
-  async function sendMessage() {await saveMemoryToDatabase();
-    if (!input.trim() || loading) return;
+  async function sendMessage() {
+  if (!input.trim() || loading) return;
 
-    const text = input.trim();
+  await saveMemoryToDatabase(uploadCount, productMemory);
+
+  const text = input.trim();
 
     setMessages((prev) => [
       ...prev,
@@ -291,7 +296,7 @@ async function saveMemoryToDatabase(nextUploadCount?: number) {
         setTimelineMemory(data.timelineMemory);
         localStorage.setItem("aina_timeline_memory", data.timelineMemory);
       }
-
+await saveMemoryToDatabase();
       await showAinaReply(data?.reply || "AINA tersangkut sekejap 😊");
     } catch (error) {
       console.error(error);
@@ -372,9 +377,12 @@ await saveMemoryToDatabase(nextUploadCount);
       const data = await readJsonResponse(response);
 
       if (data?.memory) {
-        setProductMemory(data.memory);
-        localStorage.setItem("aina_product_memory", data.memory);
-      }
+  setProductMemory(data.memory);
+  localStorage.setItem("aina_product_memory", data.memory);
+  await saveMemoryToDatabase(nextUploadCount, data.memory);
+} else {
+  await saveMemoryToDatabase(nextUploadCount);
+}
 
       await showAinaReply(
         data?.reply ||
