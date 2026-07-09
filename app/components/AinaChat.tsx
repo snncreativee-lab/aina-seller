@@ -471,8 +471,9 @@ await saveMemoryToDatabase(nextUploadCount);
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          plan: nextPlan,
-        }),
+  plan: nextPlan,
+  phone: userId,
+}),
       });
 
       const data = await readJsonResponse(response);

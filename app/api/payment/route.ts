@@ -27,6 +27,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const plan = body.plan as Plan;
+    const phone = body.phone || "guest";
 
     if (!plan || !PLAN_CONFIG[plan]) {
       return NextResponse.json({ error: "Plan tidak sah." }, { status: 400 });
@@ -94,6 +95,7 @@ export async function POST(req: Request) {
     {
       reference_no: referenceNo,
       bill_code: billCode,
+      phone,
       plan,
       amount: selectedPlan.amount,
       status: "pending",
