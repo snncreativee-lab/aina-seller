@@ -6,33 +6,47 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const ref = body.ref;
-    const plan = body.plan;
-    const billCode = body.billCode;
 
-    if (!ref || !plan) {
+    if (!ref) {
       return NextResponse.json(
-        { error: "Missing ref or plan" },
+        { error: "Missing ref" },
         { status: 400 }
       );
     }
 
-    const { error } = await supabase
+    const { data: payment, error } = await supabase
       .from("payments")
-      .update({
-        status: "paid",
-        bill_code: billCode || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("reference_no", ref);
+      .select("reference_no, plan, status, bill_code")
+      .eq("reference_no", ref)
+      .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error || !payment) {
+      return NextResponse.json({
+        success: true,
+        paid: false,
+      });
     }
 
-    return NextResponse.json({ success: true });
+    if (payment.status !== "paid") {
+      return NextResponse.json({
+        success: true,
+        paid: false,
+        status: payment.status,
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      paid: true,
+      plan: payment.plan,
+      billCode: payment.bill_code,
+    });
   } catch (error) {
     console.error("PAYMENT CONFIRM ERROR:", error);
 
-    return NextResponse.json({ error: "Confirm error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Confirm error" },
+      { status: 500 }
+    );
   }
 }

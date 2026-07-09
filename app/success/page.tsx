@@ -3,39 +3,54 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Plan = "starter" | "partner";
+type PaymentStatus = "checking" | "paid" | "pending";
 
 export default function SuccessPage() {
-  const [plan, setPlan] = useState<Plan | null>(null);
+  const [status, setStatus] = useState<PaymentStatus>("checking");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
-    const paidPlan = params.get("plan") as Plan | null;
-    const statusId = params.get("status_id");
     const ref = params.get("ref");
+    const statusId = params.get("status_id");
     const billCode = params.get("billcode");
 
-    if (paidPlan !== "starter" && paidPlan !== "partner") return;
+    async function confirmPayment() {
+      if (!ref || statusId !== "1") {
+        setStatus("pending");
+        return;
+      }
 
-    localStorage.setItem("aina_plan", paidPlan);
-    localStorage.setItem("aina_upload_count", "0");
-    localStorage.setItem("aina_payment_unlocked", paidPlan);
-    setPlan(paidPlan);
+      try {
+        const response = await fetch("/api/payment/confirm", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ref,
+            billCode,
+          }),
+        });
 
-    if (statusId === "1" && ref) {
-      fetch("/api/payment/confirm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ref,
-          plan: paidPlan,
-          billCode,
-        }),
-      });
+        const data = await response.json();
+
+        if (data?.paid && data?.plan) {
+          localStorage.setItem("aina_plan", data.plan);
+          localStorage.setItem("aina_upload_count", "0");
+          localStorage.setItem("aina_payment_unlocked", data.plan);
+          setStatus("paid");
+          return;
+        }
+
+        setStatus("pending");
+      } catch (error) {
+        console.error(error);
+        setStatus("pending");
+      }
     }
+
+    confirmPayment();
   }, []);
 
   return (
@@ -62,16 +77,24 @@ export default function SuccessPage() {
           boxShadow: "0 8px 30px rgba(109, 61, 245, 0.15)",
         }}
       >
-        <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>
+          {status === "paid" ? "✅" : status === "checking" ? "⏳" : "⚠️"}
+        </div>
 
         <h1 style={{ fontSize: 22, marginBottom: 10, color: "#1F2937" }}>
-          Payment berjaya
+          {status === "paid"
+            ? "Payment berjaya"
+            : status === "checking"
+            ? "AINA sedang semak bayaran"
+            : "Bayaran belum disahkan"}
         </h1>
 
         <p style={{ fontSize: 14, lineHeight: 1.6, color: "#4B5563" }}>
-          {plan === "partner"
-            ? "Alhamdulillah 😊 AINA Partner dah aktif. Sekarang awak boleh upload gambar produk tanpa had untuk bulan ini."
-            : "Alhamdulillah 😊 Mood RM4.90 dah aktif. Sekarang awak boleh sambung upload 6 gambar produk lagi."}
+          {status === "paid"
+            ? "Alhamdulillah 😊 Pakej awak dah aktif. Sekarang boleh sambung bersama AINA."
+            : status === "checking"
+            ? "Sekejap ya. AINA sedang pastikan bayaran awak betul-betul berjaya."
+            : "Kalau bayaran belum selesai, sila lengkapkan pembayaran dahulu. Kalau duit sudah ditolak, tunggu sekejap dan cuba refresh halaman ini."}
         </p>
 
         <Link
@@ -79,7 +102,7 @@ export default function SuccessPage() {
           style={{
             display: "block",
             marginTop: 20,
-            background: "#6D3DF5",
+            background: status === "paid" ? "#6D3DF5" : "#9CA3AF",
             color: "#FFFFFF",
             textDecoration: "none",
             borderRadius: 999,
