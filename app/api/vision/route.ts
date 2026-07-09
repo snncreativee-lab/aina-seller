@@ -99,7 +99,7 @@ Upload ke: ${uploadCount}
 `;
 
     const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL!,
       instructions: AINA_SYSTEM_PROMPT,
       input: [
         {
@@ -119,7 +119,7 @@ Upload ke: ${uploadCount}
     });
 
     const memoryResponse = await openai.responses.create({
-      model: "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL!,
       input: `
 Daripada jawapan AINA ini, kemas kini memory produk seller.
 

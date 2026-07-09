@@ -67,7 +67,7 @@ Contoh soalan:
 `;
 
     const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL!,
       instructions: AINA_SYSTEM_PROMPT,
       input: `
 ${memoryContext}
@@ -78,7 +78,7 @@ ${message}
     });
 
     const memoryResponse = await openai.responses.create({
-      model: "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL!,
       input: `
 ${BUSINESS_MEMORY_PROMPT}
 
