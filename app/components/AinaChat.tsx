@@ -641,22 +641,18 @@ await saveMemoryToDatabase(nextUploadCount);
             flexShrink: 0,
           }}
         >
-          <div
+          <img
+            src="/aina-logo.png"
+            alt="AINA"
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "50%",
-              background: "#FFFFFF",
-              color: "#6D3DF5",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 800,
-              fontSize: 22,
-            }}
-          >
-            A
-          </div>
+            width: 42,
+            height: 42,
+            borderRadius: "50%",
+            objectFit: "cover",
+            background: "#FFFFFF",
+            flexShrink: 0,
+  }}
+/>
 
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>AINA</div>
