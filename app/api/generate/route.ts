@@ -102,16 +102,26 @@ Kemas kini memory bisnes seller.
       reply: response.output_text,
       businessMemory: memoryResponse.output_text,
     });
-  } catch (error) {
-    console.error("GENERATE ERROR:", error);
+  } catch (error: any) {
+  console.error("GENERATE ERROR:", error);
 
-    return NextResponse.json(
-      {
-        error: "AINA tersangkut sekejap.",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
+  const isQuotaError =
+    error?.error?.code === "insufficient_quota" ||
+    error?.code === "insufficient_quota" ||
+    error?.message?.includes("insufficient_quota") ||
+    error?.message?.includes("quota");
+
+  const message = isQuotaError
+    ? "🙏 Maaf ya. AINA sedang menerima sambutan yang sangat tinggi sekarang.\n\nKami sedang menyediakan semula kapasiti untuk semua pengguna.\n\nSila cuba lagi dalam beberapa minit. Terima kasih atas kesabaran awak 💜"
+    : "😊 Maaf, AINA tersangkut sekejap.\n\nCuba hantar sekali lagi ya.";
+
+  return NextResponse.json(
+    {
+      error: message,
+    },
+    {
+      status: 500,
+    }
+  );
+}
 }

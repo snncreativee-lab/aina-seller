@@ -148,16 +148,26 @@ Format memory:
       reply: response.output_text,
       memory: memoryResponse.output_text,
     });
-  } catch (error) {
-    console.error("VISION ERROR:", error);
+  } catch (error: any) {
+  console.error("VISION ERROR:", error);
 
-    return NextResponse.json(
-      {
-        error: "AINA tak dapat baca gambar sekejap.",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
+  const isQuotaError =
+    error?.error?.code === "insufficient_quota" ||
+    error?.code === "insufficient_quota" ||
+    error?.message?.includes("insufficient_quota") ||
+    error?.message?.includes("quota");
+
+  const message = isQuotaError
+    ? "🙏 Maaf ya. AINA sedang menerima sambutan yang sangat tinggi sekarang.\n\nKami sedang menyediakan semula kapasiti untuk semua pengguna.\n\nSila cuba lagi dalam beberapa minit. Terima kasih atas kesabaran awak 💜"
+    : "😊 Maaf, AINA tak dapat baca gambar sekejap.\n\nCuba upload sekali lagi ya.";
+
+  return NextResponse.json(
+    {
+      error: message,
+    },
+    {
+      status: 500,
+    }
+  );
+}
 }
