@@ -197,6 +197,19 @@ useEffect(() => {
 
     const data = await readJsonResponse(response);
 
+    if (data?.partnerExpired) {
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: crypto.randomUUID(),
+      from: "aina",
+      type: "text",
+      text:
+        "😊 Tempoh AINA Business Partner awak telah tamat.\n\nTerima kasih sebab bersama AINA sepanjang bulan lepas 💜\n\nBila awak nak sambung semula, tekan kamera ya. Saya akan tunjukkan pakej Partner.",
+    },
+  ]);
+}
+
     if (!data?.success || !data?.found) return;
 
     if (data.profile?.plan) {
