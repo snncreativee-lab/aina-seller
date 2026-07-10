@@ -12,11 +12,47 @@ export async function POST(req: Request) {
       .eq("phone", phone)
       .single();
 
-    if (profileError) {
+    if (profileError || !profile) {
       return NextResponse.json({
         success: true,
         found: false,
       });
+    }
+
+    const now = new Date();
+    const expiresAt = profile.partner_expires_at
+      ? new Date(profile.partner_expires_at)
+      : null;
+
+    const partnerExpired =
+      profile.plan === "partner" &&
+      expiresAt !== null &&
+      expiresAt.getTime() <= now.getTime();
+
+    if (partnerExpired) {
+      const { data: updatedProfile, error: expiryUpdateError } = await supabase
+        .from("profiles")
+        .update({
+          plan: "starter",
+          upload_count: 6,
+          updated_at: now.toISOString(),
+        })
+        .eq("id", profile.id)
+        .select()
+        .single();
+
+      if (expiryUpdateError) {
+        console.error("PARTNER EXPIRY UPDATE ERROR:", expiryUpdateError);
+
+        return NextResponse.json(
+          { error: "Gagal kemas kini langganan." },
+          { status: 500 }
+        );
+      }
+
+      profile.plan = updatedProfile.plan;
+      profile.upload_count = updatedProfile.upload_count;
+      profile.updated_at = updatedProfile.updated_at;
     }
 
     const { data: brain, error: brainError } = await supabase
@@ -31,6 +67,7 @@ export async function POST(req: Request) {
         found: true,
         profile,
         brain: null,
+        partnerExpired,
       });
     }
 
@@ -39,6 +76,7 @@ export async function POST(req: Request) {
       found: true,
       profile,
       brain,
+      partnerExpired,
     });
   } catch (error) {
     console.error("MEMORY LOAD ERROR:", error);
