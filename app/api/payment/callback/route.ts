@@ -55,27 +55,48 @@ export async function POST(req: Request) {
     }
 
     if (isPaid && payment.phone && payment.plan) {
-      const { error: profileUpdateError } = await supabase
-        .from("profiles")
-        .upsert(
-          {
-            phone: payment.phone,
-            plan: payment.plan,
-            upload_count: 0,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "phone",
-          }
-        );
+  const now = new Date();
 
-      if (profileUpdateError) {
-        return NextResponse.json(
-          { error: profileUpdateError.message },
-          { status: 500 }
-        );
-      }
-    }
+  const profileData: {
+    phone: string;
+    plan: string;
+    upload_count: number;
+    updated_at: string;
+    partner_started_at?: string | null;
+    partner_expires_at?: string | null;
+  } = {
+    phone: payment.phone,
+    plan: payment.plan,
+    upload_count: 0,
+    updated_at: now.toISOString(),
+  };
+
+  if (payment.plan === "partner") {
+    const expiresAt = new Date(now);
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    profileData.partner_started_at = now.toISOString();
+    profileData.partner_expires_at = expiresAt.toISOString();
+  }
+
+  if (payment.plan === "starter") {
+    profileData.partner_started_at = null;
+    profileData.partner_expires_at = null;
+  }
+
+  const { error: profileUpdateError } = await supabase
+    .from("profiles")
+    .upsert(profileData, {
+      onConflict: "phone",
+    });
+
+  if (profileUpdateError) {
+    return NextResponse.json(
+      { error: profileUpdateError.message },
+      { status: 500 }
+    );
+  }
+}
 
     return NextResponse.json({
       success: true,
