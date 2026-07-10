@@ -78,6 +78,7 @@ export default function AinaChat() {
   const anonymousId = getAnonymousUserId();
 setUserId(anonymousId);
 loadChat(anonymousId);
+loadMemoryFromDatabase(anonymousId);
   const savedMemory = localStorage.getItem("aina_product_memory");
   const savedBusinessMemory = localStorage.getItem("aina_business_memory");
   const savedTimelineMemory = localStorage.getItem("aina_timeline_memory");
