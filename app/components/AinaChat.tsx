@@ -350,13 +350,25 @@ async function loadChat(phoneId: string) {
         localStorage.setItem("aina_timeline_memory", data.timelineMemory);
       }
 await saveMemoryToDatabase();
-      await showAinaReply(data?.reply || "AINA tersangkut sekejap 😊");
+      await showAinaReply(
+  data?.reply ||
+  data?.error ||
+  "AINA tersangkut sekejap 😊"
+);
     } catch (error) {
       console.error(error);
 
       await showAinaReply(
-        "Maaf 😊\n\nAINA tersangkut sekejap.\n\nCuba hantar sekali lagi ya."
-      );
+`🙏 Maaf ya.
+
+AINA sedang menerima sambutan yang sangat tinggi sekarang.
+
+Kami sedang menyediakan semula kapasiti untuk semua pengguna.
+
+Sila cuba lagi dalam beberapa minit.
+
+Terima kasih atas kesabaran awak. 💜`
+);
     } finally {
       setLoading(false);
     }
