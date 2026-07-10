@@ -29,14 +29,6 @@ export async function POST(req: Request) {
       expiresAt !== null &&
       expiresAt.getTime() <= now.getTime();
 
-      console.log("PARTNER EXPIRY CHECK:", {
-  phone,
-  plan: profile.plan,
-  expiresAt: profile.partner_expires_at,
-  now: now.toISOString(),
-  partnerExpired,
-});
-
     if (partnerExpired) {
       const { data: updatedProfile, error: expiryUpdateError } = await supabase
         .from("profiles")
