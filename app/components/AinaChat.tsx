@@ -345,6 +345,7 @@ async function loadChat(phoneId: string) {
         },
         body: JSON.stringify({
           message: text,
+          phone: userId,
           productMemory,
           businessMemory,
           timelineMemory,
