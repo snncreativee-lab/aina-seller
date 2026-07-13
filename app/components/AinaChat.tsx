@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import InstallButton from "./InstallButton";
 
 type Plan = "free" | "starter" | "partner";
 
@@ -761,6 +762,14 @@ await saveMemoryToDatabase(nextUploadCount);
             e.target.value = "";
           }}
         />
+        <div
+  style={{
+    padding: "0 12px 10px",
+    background: "#FFFFFF",
+  }}
+>
+  <InstallButton />
+</div>
 
         <div
           style={{
