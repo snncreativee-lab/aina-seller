@@ -119,7 +119,7 @@ Upload ke: ${uploadCount}
     });
 
     const memoryResponse = await openai.responses.create({
-      model: process.env.OPENAI_MODEL!,
+      model: process.env.OPENAI_VISION_MODEL || "gpt-5-mini",
       input: `
 Daripada jawapan AINA ini, kemas kini memory produk seller.
 
